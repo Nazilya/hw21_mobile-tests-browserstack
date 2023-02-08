@@ -1,0 +1,75 @@
+plugins {
+    id 'java-library'
+    id 'io.qameta.allure' version '2.11.2'
+}
+
+repositories {
+    mavenCentral()
+}
+
+def allureVersion = "2.20.0"
+
+allure {
+    report {
+        version.set(allureVersion)
+    }
+    adapter { // отвечает за появление папочки build/allure-results
+        aspectjWeaver.set(true) //обработка аннотации @Step
+        frameworks {
+            junit5 { //название фреймворка
+                adapterVersion.set(allureVersion) //версия интеграции фреймворка и Allure
+            }
+        }
+    }
+}
+
+dependencies {
+    testImplementation(
+            "com.codeborne:selenide:6.11.2",
+            "io.qameta.allure:allure-selenide:$allureVersion",
+            "io.appium:java-client:8.3.0",
+            "io.rest-assured:rest-assured:5.3.0",
+            "io.qameta.allure:allure-rest-assured:$allureVersion",
+            'org.projectlombok:lombok:1.18.22',
+            "com.github.javafaker:javafaker:1.0.2",
+            "org.junit.jupiter:junit-jupiter:5.9.2",
+            "org.slf4j:slf4j-simple:2.0.6",
+            'org.aeonbits.owner:owner-java8:1.0.12',
+            'io.github.bonigarcia:webdrivermanager:5.3.2'
+    )
+    testCompileOnly(
+            "org.projectlombok:lombok:1.18.24"
+    )
+
+    testAnnotationProcessor(
+            "org.projectlombok:lombok:1.18.24"
+    )
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    systemProperties(System.getProperties())
+    useJUnitPlatform()
+
+    testLogging {
+        lifecycle {
+            events "started", "skipped", "failed", "standard_error", "standard_out"
+            exceptionFormat "short"
+        }
+    }
+}
+
+task ios(type: Test) {
+    useJUnitPlatform {
+        includeTags 'ios'
+    }
+}
+
+task android(type: Test) {
+    useJUnitPlatform {
+        includeTags 'android'
+    }
+}
